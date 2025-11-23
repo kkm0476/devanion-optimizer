@@ -4,6 +4,7 @@
 ## Screenshot
 <img width="451" height="474" alt="image1" src="https://github.com/user-attachments/assets/f74c7b70-77fe-4e96-9913-65df25eff498" />
 <img width="451" height="474" alt="image2" src="https://github.com/user-attachments/assets/bf044411-c79a-4da9-ba27-08190132d182" />
+<img width="451" height="474" alt="image3" src="https://github.com/user-attachments/assets/c4602311-f9db-4b25-880c-88f3f99a270f" />
 
 ## Algorithm
 이 문제는 가중치가 존재하는 Steiner tree 문제에 해당합니다.
