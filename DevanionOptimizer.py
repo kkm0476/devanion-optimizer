@@ -298,18 +298,127 @@ class DevanionOptimizer:
         
         return total_cost, full_path_nodes
 
+    def _optimization(self):
+        if not self.targets:
+            self.path_nodes.clear()
+            self._draw_grid()
+            self.result_label.config(text=f"목표 노드를 클릭하세요", fg="black", bg="#f0f0f0", font=("맑은 고딕", 14, "bold"))
+            return
+
+        ITERATIONS = 50 
+        best_total_cost = float('inf')
+        best_path_set = set()
+
+        targets_list = list(self.targets)
+        
+        for start_target in targets_list:
+            path = self._run_simulation(targets_list, first_target=start_target)
+            refined_path = self._refine_path(path)
+            cost = self._calculate_final_cost(refined_path)
+            
+            if cost < best_total_cost:
+                best_total_cost = cost
+                best_path_set = refined_path
+
+        for _ in range(ITERATIONS):
+            shuffled_targets = list(self.targets)
+            random.shuffle(shuffled_targets)
+            path = self._run_simulation(shuffled_targets, first_target=None)
+            
+            refined_path = self._refine_path(path)
+            cost = self._calculate_final_cost(refined_path)
+            
+            if cost < best_total_cost:
+                best_total_cost = cost
+                best_path_set = refined_path
+
+        if best_total_cost == float('inf'):
+            messagebox.showerror("오류", "연결 불가능한 목표가 있습니다.")
+            return
+
+        self.path_nodes = best_path_set
+        self._draw_grid(best_path_set)
+        self.result_label.config(text=f"[{self.current_map_name}] 최소 포인트: {best_total_cost}", fg="black", bg="#f0f0f0", font=("맑은 고딕", 14, "bold"))
+
+    def _refine_path(self, path_set):
+        if not path_set: return set()
+        
+        terminals = self.targets.union({self.start_node})
+        
+        candidates = list(path_set - terminals)
+        
+        candidates.sort(key=lambda pos: COSTS.get(self.grid_data[pos[0]][pos[1]], 0), reverse=True)
+        
+        current_path = path_set.copy()
+        
+        for node in candidates:
+            current_path.remove(node)
+            
+            if not self._check_connectivity(current_path, terminals):
+                current_path.add(node)
+                
+        return current_path
+
+    def _check_connectivity(self, path_set, terminals):
+        if not terminals.issubset(path_set): return False
+        
+        q = [self.start_node]
+        visited = {self.start_node}
+        count_terminals = 1 if self.start_node in terminals else 0
+        
+        while q:
+            r, c = q.pop(0)
+            
+            for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nr, nc = r + dr, c + dc
+                if (nr, nc) in path_set and (nr, nc) not in visited:
+                    visited.add((nr, nc))
+                    q.append((nr, nc))
+                    if (nr, nc) in terminals:
+                        count_terminals += 1
+        
+        return count_terminals == len(terminals)
+
+    def _calculate_final_cost(self, path_set):
+        cost = 0
+        for (r, c) in path_set:
+            if (r, c) == self.start_node: continue
+            n_type = self.grid_data[r][c]
+            cost += COSTS.get(n_type, 0)
+        return cost
+
+    def _run_simulation(self, target_order_list, first_target=None):
+        activated = set([self.start_node])
+        remaining = target_order_list[:]
+
+        if first_target and first_target in remaining:
+            remaining.remove(first_target)
+            remaining.insert(0, first_target)
+        
+        while remaining:
+            reached_targets = [t for t in remaining if t in activated]
+            for t in reached_targets: remaining.remove(t)
+            
+            if not remaining: break
+
+            _, path, target = self._dijkstra(activated, remaining)
+            if not target: return set() 
+
+            remaining.remove(target)
+            for node in path:
+                activated.add(node)
+        
+        return activated
+
     def _dijkstra(self, starts, targets):
         pq = []
         visited = set()
         for node in starts:
             heapq.heappush(pq, (0, node[0], node[1], []))
             visited.add(node)
-        
         while pq:
             cost, r, c, path = heapq.heappop(pq)
-            if (r, c) in targets:
-                return cost, path, (r, c)
-            
+            if (r, c) in targets: return cost, path, (r, c)
             for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nr, nc = r + dr, c + dc
                 if 0 <= nr < self.rows and 0 <= nc < self.cols:
@@ -320,68 +429,6 @@ class DevanionOptimizer:
                             visited.add((nr, nc))
                             heapq.heappush(pq, (cost + weight, nr, nc, path + [(nr, nc)]))
         return 0, [], None
-
-    def _optimization(self):
-        if not self.targets:
-            self.path_nodes.clear()
-            self._draw_grid()
-            self.result_label.config(text=f"목표 노드를 클릭하세요", fg="black", bg="#f0f0f0", font=("맑은 고딕", 14, "bold"))
-            return
-
-        ITERATIONS = 100
-        
-        best_total_cost = float('inf')
-        best_path_set = set()
-
-        targets_list = list(self.targets)
-        for start_target in targets_list:
-            cost, path = self._run_simulation(targets_list, first_target=start_target)
-            if cost < best_total_cost:
-                best_total_cost = cost
-                best_path_set = path
-
-        for _ in range(ITERATIONS):
-            shuffled_targets = list(self.targets)
-            random.shuffle(shuffled_targets)
-            
-            cost, path = self._run_simulation(shuffled_targets, first_target=None)
-            
-            if cost < best_total_cost:
-                best_total_cost = cost
-                best_path_set = path
-
-        if best_total_cost == float('inf'):
-            messagebox.showerror("오류", "연결 불가능한 목표가 있습니다.")
-            return
-
-        self.path_nodes = best_path_set
-        self._draw_grid(best_path_set)
-        self.result_label.config(text=f"[{self.current_map_name}] 필요 데바니온 결정: {best_total_cost}", fg="black", bg="#f0f0f0", font=("맑은 고딕", 14, "bold"))
-
-    def _run_simulation(self, target_order_list, first_target=None):
-        activated = set([self.start_node])
-        total_cost = 0
-        full_path = set([self.start_node])
-        
-        remaining = target_order_list[:]
-
-        if first_target:
-            if first_target in remaining:
-                remaining.remove(first_target)
-                remaining.insert(0, first_target)
-        
-        while remaining:
-            cost, path, target = self._dijkstra(activated, remaining)
-            
-            if not target: return float('inf'), set() 
-
-            remaining.remove(target)
-            total_cost += cost
-            for node in path:
-                if node not in activated: activated.add(node)
-                full_path.add(node)
-        
-        return total_cost, full_path
     
 if __name__ == "__main__":
     root = tk.Tk()
