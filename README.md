@@ -2,10 +2,10 @@
 아이온2 데바니온 최적화 프로그램입니다.
 
 ## Screenshot
-<img width="451" height="474" alt="image1" src="https://github.com/user-attachments/assets/f74c7b70-77fe-4e96-9913-65df25eff498" />
-<img width="451" height="474" alt="image2" src="https://github.com/user-attachments/assets/bf044411-c79a-4da9-ba27-08190132d182" />
-<img width="451" height="474" alt="image3" src="https://github.com/user-attachments/assets/81ce1e75-a9d1-4a00-a0af-6ebdb22a6d22" />
-<img width="451" height="474" alt="image4" src="https://github.com/user-attachments/assets/c4602311-f9db-4b25-880c-88f3f99a270f" />
+<img width="451" height="474" alt="스크린샷 2025-11-23 111820" src="https://github.com/user-attachments/assets/0ec7485f-16fb-4f15-a504-2a4b507f636b" />
+<img width="451" height="474" alt="스크린샷 2025-11-23 111723" src="https://github.com/user-attachments/assets/26c33e45-916f-4ec9-905a-7f5609c85191" />
+<img width="451" height="474" alt="스크린샷 2025-11-23 111704" src="https://github.com/user-attachments/assets/d7d333f8-9b7e-48e0-b271-93ac7e921d68" />
+<img width="451" height="474" alt="스크린샷 2025-11-23 111645" src="https://github.com/user-attachments/assets/69260b48-c488-41da-955c-57e4bc915e6a" />
 
 ## Algorithm
 이 문제는 가중치가 존재하는 Steiner tree 문제에 해당합니다.
